@@ -1,92 +1,45 @@
 const express = require('express');
 const cors = require('cors');
+const knex = require('knex');
+const bcrypt = require('bcryptjs');
+
+const register = require('./controllers/register');
+const signin = require('./controllers/signin');
+const profile = require('./controllers/profile');
+const image = require('./controllers/image');
+
+ const db = knex({
+    client: 'pg',
+    connection: {
+      host : '127.0.0.1',
+      user : 'postgres',
+      password : '4085',
+      database : 'smartbrain'
+    }
+  });
+
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 
-const database = {
-    users: [
-        {
-            id: '123',
-            name: 'john',
-            email: 'john@gmail.com',
-            password: 'cookies',
-            entries: 0,
-            joined: new Date()
-        },
-        {
-            id: '124',
-            name: 'jerker',
-            email: 'jerker@gmail.com',
-            password: 'milk',
-            entries: 0,
-            joined: new Date()
-        }
-    ]
-}
 
 //This is working endpoint
 app.get('/', (req,res)=>{
     res.send(database.users);
 })
 
-//Sign in endpoint
-app.post('/signin', (req,res)=>{
-    if (req.body.email === database.users[0].email && req.body.password === database.users[0].password ) {
-        res.json(database.users[0]);
-    } else {
-        res.status(400).json('error logging in');
-    }
-    res.json('signin');
-})
+app.post('/signin', (req,res) => { signin.handleSignIn(req,res,db,bcrypt) });
+app.post('/register', (req,res) => { register.handleRegistration(req,res,db,bcrypt) });
+app.get('/profile/:id', (req,res) => { profile.handleProfile(req,res,db) });
+app.put('/image', (req,res)=> { image.handleImage(req,res,db) });
+app.post('/imageurl', (req,res)=> { image.handleApiCall(req,res) });
 
-//Register endpoint, (new user)
-app.post('/register', (req,res)=>{
-    const {email, name, password} = req.body;
-    database.users.push({
-        id: '125',
-        name: name,
-        email: email,
-        password: password,
-        entries: 0,
-        joined: new Date()
-    })
-    res.json(database.users[database.users.length-1]);
-    console.log(database.users);
-})
 
-//Profile
-app.get('/profile/:id', (req,res)=>{
-    const { id } = req.params;
-    let found = false;
-    database.users.forEach(user => {
-        if (user.id === id) {
-            found = true;
-            return res.json(user);
-        } 
-    })
-    if (!found) {
-        res.status(404).json('no such user');
-    }
-})
 
-//Image endpoint
-app.put('/image',(req,res)=>{
-    const { id } = req.body;
-    let found = false;
-    database.users.forEach(user => {
-        if (user.id === id) {
-            found = true;
-            user.entries++;
-            return res.json(user.entries);
-        } 
-    })
-    if (!found) {
-        res.status(404).json('no such user');
-    }
-})
+
+
 
 app.listen(3001,() => {
-    console.log('App is running on port 3000');
+    console.log('App is running on port 3001');
 })
