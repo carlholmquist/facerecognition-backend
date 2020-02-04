@@ -26,7 +26,7 @@ app.use(cors());
 
 //This is working endpoint
 app.get('/', (req,res)=>{
-    res.send(database.users);
+    res.send(database.users); 
 })
 
 app.post('/signin', (req,res) => { signin.handleSignIn(req,res,db,bcrypt) });
@@ -40,6 +40,6 @@ app.post('/imageurl', (req,res)=> { image.handleApiCall(req,res) });
 
 
 
-app.listen(process.env.PORT || 3000 ,() => {
+app.listen( 3000 ,() => {
     console.log(`App is running on port ${process.env.PORT}`);
 })
